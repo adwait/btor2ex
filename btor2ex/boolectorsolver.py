@@ -10,7 +10,7 @@
 
 import os
 
-from btorsolver import BTORSolver, BTORSort
+from .btorsolver import BTORSolver, BTORSort
 
 import pyboolector
 

@@ -7,9 +7,9 @@ import logging
 
 import btoropt
 
-import btor2ex
-import utils
-import boolectorsolver
+import btor2ex.btor2ex as btor2ex
+import btor2ex.utils as utils
+import btor2ex.boolectorsolver as boolectorsolver
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

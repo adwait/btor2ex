@@ -3,10 +3,10 @@ import unittest
 
 import btoropt
 
-import boolectorsolver
-import prfsm
-import btor2ex
-import utils
+from btor2ex.boolectorsolver import BoolectorSolver
+import btor2ex.prfsm as prfsm
+from btor2ex.btor2ex import BTOR2Ex
+import btor2ex.utils as utils
 
 
 class PrFSMTest(unittest.TestCase):
@@ -26,11 +26,11 @@ class BTORMCTest(unittest.TestCase):
     def test_btormc_unsafe(self):
         prgm = btoropt.parse(utils.parsewrapper("tests/btor/reg_en.bad.btor"))
 
-        engine = btor2ex.BTOR2Ex(boolectorsolver.BoolectorSolver("test"), prgm)
+        engine = BTOR2Ex(BoolectorSolver("test"), prgm)
         self.assertFalse(engine.bmc(3))
 
     def test_btormc_safe(self):
         prgm = btoropt.parse(utils.parsewrapper("tests/btor/reg_en.safe.btor"))
 
-        engine = btor2ex.BTOR2Ex(boolectorsolver.BoolectorSolver("test"), prgm)
+        engine = BTOR2Ex(BoolectorSolver("test"), prgm)
         self.assertTrue(engine.bmc(3))

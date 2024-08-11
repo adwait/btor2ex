@@ -13,7 +13,7 @@ import sys
 
 from btoropt import program as prg
 
-from btorsolver import BTORSolver
+from .btorsolver import BTORSolver
 
 logger = logging.getLogger(__name__)
 
