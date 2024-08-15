@@ -55,7 +55,7 @@ class BTOR2Ex():
         """
         assert len(self.state) == 0, "State must be empty for preprocessing"
         
-        logger.info("Preprocessing and loading first frame.")
+        logger.debug("Preprocessing and loading first frame.")
         
         new_state_f = {}
         
@@ -89,7 +89,7 @@ class BTOR2Ex():
                 pass
 
         self.state.append(new_state_f)
-        logger.info("Preprocessing complete")
+        logger.debug("Preprocessing complete")
         logger.debug("Sorts: %s", self.sorts)
         logger.debug("State: %s", self.state)
         logger.debug("Names: %s", self.names)
@@ -215,14 +215,14 @@ class BTOR2Ex():
                         self.slv.mk_assume(assm)
                 self.slv.mk_assert(bad)
                 result = self.slv.check_sat()
-                logger.info("At depth %d, result %s", i, "BUG" if result else "SAFE")
+                logger.debug("At depth %d, result %s", i, "BUG" if result else "SAFE")
                 if result:
-                    logger.info("Found a bug")
+                    logger.debug("Found a bug")
                     model = self.slv.get_model()
-                    logger.info("Model:\n%s", model)
+                    logger.debug("Model:\n%s", model)
                     return False
             
-            logger.info("No bug found at depth %d", i)
+            logger.debug("No bug found at depth %d", i)
         
         # Safe
         return True
