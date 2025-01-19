@@ -1,7 +1,7 @@
 # =============================================================================
-#   BTOR Symbolic Execution Engine and Backends                        
+#   BTOR Symbolic Execution Engine and Backends
 #
-#   BSD 3-Clause License. Copyright (c) 2024, Adwait Godbole 
+#   BSD 3-Clause License. Copyright (c) 2024, Adwait Godbole
 # =============================================================================
 
 """
@@ -17,10 +17,12 @@ from .btorsolver import BTORSolver
 
 logger = logging.getLogger(__name__)
 
-class BTOR2Ex():
+
+class BTOR2Ex:
     """
-        Symbolically execute a BTOR program: the barebones 
+    Symbolically execute a BTOR program: the barebones
     """
+
     def __init__(self, solver: BTORSolver, prog: list[prg.Instruction]):
         """
         Args:
@@ -29,36 +31,35 @@ class BTOR2Ex():
         """
         self.slv = solver
         self.prog = prog
-        
-        self.names = {}
-        
+
+        self.names: dict[str, int] = {}
+
         # List of variable assignments
-        self.state : list[dict]  = []
-        # Bads 
-        self.bads : list[dict] = []
+        self.state: list[dict] = []
+        # Bads
+        self.bads: list[dict] = []
         # Constraints
-        self.assms : list[dict] = []
+        self.prgm_assms: list[dict] = []
         # Next mappings
-        self.nexts : dict = {}
+        self.nexts: dict = {}
         # Sorts
-        self.sorts : dict = {}
-        
-        
+        self.sorts: dict = {}
+
         self.oplut = self.slv.oplut()
-    
-    def mk_name (self, var: str, step: int):
+
+    def mk_name(self, var: str, step: int):
         return f"{var}_{step}"
-    
-    def preprocess (self):
+
+    def preprocess(self):
         """
         Make a pass over the program without execution, gathers state and input information
         """
         assert len(self.state) == 0, "State must be empty for preprocessing"
-        
+
         logger.debug("Preprocessing and loading first frame.")
-        
+
         new_state_f = {}
-        
+
         for inst in self.prog:
             # This is a sort instruction
             if isinstance(inst, prg.Sort):
@@ -74,7 +75,8 @@ class BTOR2Ex():
             elif isinstance(inst, prg.State):
                 # Create a new state
                 new_state_f[inst.lid] = self.slv.mk_var(
-                    self.mk_name(inst.name, 1), self.sorts[inst.sid])
+                    self.mk_name(inst.name, 1), self.sorts[inst.sid]
+                )
                 self.names[inst.name] = inst.lid
             elif isinstance(inst, prg.Uext):
                 # Handle Uexts which are creating new name bindings
@@ -93,15 +95,15 @@ class BTOR2Ex():
         logger.debug("Sorts: %s", self.sorts)
         logger.debug("State: %s", self.state)
         logger.debug("Names: %s", self.names)
-        return        
-        
-    def execute (self):
+        return
+
+    def execute(self):
         """Symbolically unroll the program by one step"""
         step = len(self.state)
         if step == 0:
             self.preprocess()
             step += 1
-        
+
         curr_f = {}
         # curr_inputs_f = {}
         curr_assms_f = {}
@@ -111,9 +113,9 @@ class BTOR2Ex():
         # Deepcopy the current state
         for id, expr in self.state[-1].items():
             curr_f[id] = expr
-        
+
         for inst in self.prog:
-            
+
             # This is a sort instruction
             if isinstance(inst, prg.Sort):
                 # Already preprocessed
@@ -121,7 +123,8 @@ class BTOR2Ex():
             elif isinstance(inst, prg.Input):
                 # Create a new input
                 new_inputs = self.slv.mk_var(
-                    self.mk_name(inst.name, step), self.sorts[inst.sid])
+                    self.mk_name(inst.name, step), self.sorts[inst.sid]
+                )
                 curr_f[inst.lid] = new_inputs
                 # curr_inputs_f[inst.lid] = new_inputs
             elif isinstance(inst, prg.State):
@@ -131,12 +134,11 @@ class BTOR2Ex():
                 # Outputs are ignored
                 pass
             elif isinstance(inst, prg.Init):
-                logger.error("Input instructions are not supported %s", inst)
-                sys.exit(1)
+                curr_f[inst.operands[1].lid] = curr_f[inst.operands[2].lid]
             elif isinstance(inst, prg.Next):
                 next_state_f[self.nexts[inst.lid]] = curr_f[inst.operands[2].lid]
             elif isinstance(inst, prg.Constraint):
-                curr_assms_f[inst.lid] = (curr_f[inst.operands[0].lid])
+                curr_assms_f[inst.lid] = curr_f[inst.operands[0].lid]
             elif isinstance(inst, prg.Const):
                 curr_f[inst.lid] = self.slv.mk_const(inst.value, self.sorts[inst.sid])
             elif isinstance(inst, prg.Zero):
@@ -150,16 +152,13 @@ class BTOR2Ex():
                 # Record bad
                 curr_bads_f[inst.lid] = curr_f[inst.operands[0].lid]
             else:
-                match inst.__class__: 
+                match inst.__class__:
                     # Unary instructions
-                    case prg.Not:
+                    case prg.Not | prg.Inc | prg.Dec | prg.Neg | prg.Redand | prg.Redor | prg.Redxor:
                         op1 = curr_f[inst.operands[1].lid]
-                        curr_f[inst.lid] = self.not_(op1)
+                        curr_f[inst.lid] = self.oplut[inst.inst](op1)
                     # Binary instructions
-                    case prg.Add | prg.Sub | prg.Mul | prg.Sdiv | prg.Udiv | prg.Smod | prg.Sll \
-                        | prg.Srl | prg.Sra | prg.And | prg.Or | prg.Xor | prg.Concat \
-                        | prg.Eq | prg.Neq | prg.Ugt | prg.Sgt | prg.Ugte | prg.Sgte \
-                        | prg.Ult | prg.Slt | prg.Ulte | prg.Slte:
+                    case prg.Add | prg.Sub | prg.Mul | prg.Sdiv | prg.Udiv | prg.Smod | prg.Sll | prg.Srl | prg.Sra | prg.And | prg.Or | prg.Xor | prg.Concat | prg.Eq | prg.Neq | prg.Ugt | prg.Sgt | prg.Ugte | prg.Sgte | prg.Ult | prg.Slt | prg.Ulte | prg.Slte:
                         op1 = curr_f[inst.operands[1].lid]
                         op2 = curr_f[inst.operands[2].lid]
                         curr_f[inst.lid] = self.oplut[inst.inst](op1, op2)
@@ -175,28 +174,27 @@ class BTOR2Ex():
                     case prg.Slice:
                         sort = inst.operands[0]
                         op1 = curr_f[inst.operands[1].lid]
-                        high = inst.lowbit+inst.width-1
+                        high = inst.highbit
                         low = inst.lowbit
                         curr_f[inst.lid] = self.slv.slice_(op1, sort.width, high, low)
                     case _:
                         logger.error("Unknown instruction %s", inst)
                         sys.exit(1)
-        
+
         # for ip, v in curr_inputs_f.items():
         self.state[-1] = curr_f
         # [ip] = v
         # Push the next state onto the stack
         self.state.append(next_state_f)
         self.bads.append(curr_bads_f)
-        self.assms.append(curr_assms_f)
-        
-        
+        self.prgm_assms.append(curr_assms_f)
+
         logger.debug("Unrolled step %d", step)
         logger.debug("State: %s", next_state_f)
         logger.debug("Bads: %s", curr_bads_f)
         logger.debug("Assms: %s", curr_assms_f)
-        
-    def bmc (self, d=1) -> bool:
+
+    def bmc(self, d=1) -> bool:
         """Perform BMC on the program
         Args:
             d (int, optional): BMC depth. Defaults to 1.
@@ -210,7 +208,7 @@ class BTOR2Ex():
             baddict = self.bads[-1]
             for _, bad in baddict.items():
                 # Apply all assumptions
-                for assmdict in self.assms:
+                for assmdict in self.prgm_assms:
                     for _, assm in assmdict.items():
                         self.slv.mk_assume(assm)
                 self.slv.mk_assert(bad)
@@ -221,9 +219,8 @@ class BTOR2Ex():
                     model = self.slv.get_model()
                     logger.debug("Model:\n%s", model)
                     return False
-            
+
             logger.debug("No bug found at depth %d", i)
-        
+
         # Safe
         return True
-
