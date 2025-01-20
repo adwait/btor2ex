@@ -10,6 +10,7 @@
 
 import logging
 import sys
+from tqdm import tqdm
 
 from btoropt import program as prg
 
@@ -60,7 +61,7 @@ class BTOR2Ex:
 
         new_state_f = {}
 
-        for inst in self.prog:
+        for inst in tqdm(self.prog, desc="Preprocessing: "):
             # This is a sort instruction
             if isinstance(inst, prg.Sort):
                 if inst.typ != "bitvec" and inst.typ != "bitvector":
@@ -114,7 +115,7 @@ class BTOR2Ex:
         for id, expr in self.state[-1].items():
             curr_f[id] = expr
 
-        for inst in self.prog:
+        for inst in tqdm(self.prog, desc=f"Unrolling semi-step {step}"):
 
             # This is a sort instruction
             if isinstance(inst, prg.Sort):
@@ -134,7 +135,8 @@ class BTOR2Ex:
                 # Outputs are ignored
                 pass
             elif isinstance(inst, prg.Init):
-                curr_f[inst.operands[1].lid] = curr_f[inst.operands[2].lid]
+                if len(self.state) == 1:
+                    curr_f[inst.operands[1].lid] = curr_f[inst.operands[2].lid]
             elif isinstance(inst, prg.Next):
                 next_state_f[self.nexts[inst.lid]] = curr_f[inst.operands[2].lid]
             elif isinstance(inst, prg.Constraint):
