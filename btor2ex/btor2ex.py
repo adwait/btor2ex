@@ -173,6 +173,10 @@ class BTOR2Ex:
                         op1 = curr_f[inst.operands[1].lid]
                         width = inst.operands[2]
                         curr_f[inst.lid] = self.slv.uext_(op1, width)
+                    case prg.Sext:
+                        op1 = curr_f[inst.operands[1].lid]
+                        width = inst.operands[2]
+                        curr_f[inst.lid] = self.slv.sext_(op1, width)
                     case prg.Slice:
                         sort = inst.operands[0]
                         op1 = curr_f[inst.operands[1].lid]

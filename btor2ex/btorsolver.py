@@ -146,6 +146,9 @@ class BTORSolver:
     def uext_(self, a, b):
         pass
 
+    def sext_(self, a, b):
+        pass
+
     def ite_(self, a, b, c):
         pass
 
@@ -178,6 +181,7 @@ class BTORSolver:
             "ulte": self.ulte_,
             "slte": self.slte_,
             "uext": self.uext_,
+            "sext": self.sext_,
             "ite": self.ite_,
             "slice": self.slice_,
             "not": self.not_,
