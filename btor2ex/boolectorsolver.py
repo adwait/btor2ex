@@ -44,7 +44,11 @@ class BoolectorSolver(BTORSolver):
 
     def mk_var(self, name: str, sort: BTORSort):
         """Make var"""
-        return self.btor.Var(self.sort_cache[sort.width], name)
+        if sort.width in self.sort_cache:
+            return self.btor.Var(self.sort_cache[sort.width], name)
+        boolector_sort = self.btor.BitVecSort(sort.width)
+        self.sort_cache[sort.width] = boolector_sort
+        return self.btor.Var(boolector_sort, name)
 
     def mk_const(self, val: int, sort: BTORSort):
         """Make bitvec constant"""
