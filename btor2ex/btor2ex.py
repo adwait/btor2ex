@@ -10,6 +10,7 @@
 
 import logging
 import sys
+from tqdm import tqdm
 
 from btoropt import program as prg
 
@@ -48,6 +49,20 @@ class BTOR2Ex:
         self.oplut = self.slv.oplut()
         self.gui = gui
 
+    def custom_iterwrapper(self, iterable, desc: str):
+        """
+        Custom tqdm iterator wrapper
+        """
+        if self.gui is not None:
+            incr = 1.0/len(iterable)
+            for i in iterable:
+                self.gui.update_progress(desc, incr)
+                yield i
+            self.gui.reset_progress()
+        else:
+            for i in tqdm(iterable, desc):
+                yield i
+
     def mk_name(self, var: str, step: int):
         return f"{var}_{step}"
 
@@ -61,10 +76,7 @@ class BTOR2Ex:
 
         new_state_f = {}
 
-        incr = 1.0/len(self.prog)
-        for inst in self.prog:
-            if self.gui is not None:
-                self.gui.update_progress("Preprocessing: ", incr)
+        for inst in self.custom_iterwrapper(self.prog, "Preprocessing: "):
             # This is a sort instruction
             if isinstance(inst, prg.Sort):
                 if inst.typ != "bitvec" and inst.typ != "bitvector":
@@ -94,9 +106,6 @@ class BTOR2Ex:
                 # Outputs are ignored
                 pass
 
-        if self.gui is not None:
-            self.gui.reset_progress()
-
         self.state.append(new_state_f)
         logger.debug("Preprocessing complete")
         logger.debug("Sorts: %s", self.sorts)
@@ -121,11 +130,7 @@ class BTOR2Ex:
         for id, expr in self.state[-1].items():
             curr_f[id] = expr
 
-        incr = 1.0/len(self.prog)
-        for inst in self.prog:
-            if self.gui is not None:
-                self.gui.update_progress(f"Unrolling semi-step {step}: ", incr)
-
+        for inst in self.custom_iterwrapper(self.prog, f"Unrolling step {step}: "):
             # This is a sort instruction
             if isinstance(inst, prg.Sort):
                 # Already preprocessed
@@ -195,9 +200,6 @@ class BTOR2Ex:
                     case _:
                         logger.error("Unknown instruction %s", inst)
                         sys.exit(1)
-
-        if self.gui is not None:
-            self.gui.reset_progress()
 
         # for ip, v in curr_inputs_f.items():
         self.state[-1] = curr_f
