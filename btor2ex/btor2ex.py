@@ -10,7 +10,6 @@
 
 import logging
 import sys
-from tqdm import tqdm
 
 from btoropt import program as prg
 
@@ -24,7 +23,7 @@ class BTOR2Ex:
     Symbolically execute a BTOR program: the barebones
     """
 
-    def __init__(self, solver: BTORSolver, prog: list[prg.Instruction]):
+    def __init__(self, solver: BTORSolver, prog: list[prg.Instruction], gui = None):
         """
         Args:
             solver (BTORSolver): backend solver
@@ -47,6 +46,7 @@ class BTOR2Ex:
         self.sorts: dict = {}
 
         self.oplut = self.slv.oplut()
+        self.gui = gui
 
     def mk_name(self, var: str, step: int):
         return f"{var}_{step}"
@@ -61,7 +61,10 @@ class BTOR2Ex:
 
         new_state_f = {}
 
-        for inst in tqdm(self.prog, desc="Preprocessing: "):
+        incr = 1.0/len(self.prog)
+        for inst in self.prog:
+            if self.gui is not None:
+                self.gui.update_progress("Preprocessing: ", incr)
             # This is a sort instruction
             if isinstance(inst, prg.Sort):
                 if inst.typ != "bitvec" and inst.typ != "bitvector":
@@ -91,6 +94,9 @@ class BTOR2Ex:
                 # Outputs are ignored
                 pass
 
+        if self.gui is not None:
+            self.gui.reset_progress()
+
         self.state.append(new_state_f)
         logger.debug("Preprocessing complete")
         logger.debug("Sorts: %s", self.sorts)
@@ -115,7 +121,10 @@ class BTOR2Ex:
         for id, expr in self.state[-1].items():
             curr_f[id] = expr
 
-        for inst in tqdm(self.prog, desc=f"Unrolling semi-step {step}"):
+        incr = 1.0/len(self.prog)
+        for inst in self.prog:
+            if self.gui is not None:
+                self.gui.update_progress(f"Unrolling semi-step {step}: ", incr)
 
             # This is a sort instruction
             if isinstance(inst, prg.Sort):
@@ -186,6 +195,9 @@ class BTOR2Ex:
                     case _:
                         logger.error("Unknown instruction %s", inst)
                         sys.exit(1)
+
+        if self.gui is not None:
+            self.gui.reset_progress()
 
         # for ip, v in curr_inputs_f.items():
         self.state[-1] = curr_f
