@@ -201,6 +201,11 @@ class BTOR2Ex:
                         logger.error("Unknown instruction %s", inst)
                         sys.exit(1)
 
+        # Set unchanged state variables to previous values
+        for id, expr in self.state[-1].items():
+            if id not in next_state_f:
+                next_state_f[id] = expr
+
         # for ip, v in curr_inputs_f.items():
         self.state[-1] = curr_f
         # [ip] = v
