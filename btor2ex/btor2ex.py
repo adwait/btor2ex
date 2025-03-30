@@ -11,6 +11,7 @@
 import logging
 import sys
 from tqdm import tqdm
+from dataclasses import dataclass
 
 from btoropt import program as prg
 
@@ -18,6 +19,14 @@ from .btorsolver import BTORSolver
 
 logger = logging.getLogger(__name__)
 
+Assignment = dict[str, int]
+
+@dataclass
+class BTORModel:
+    # Signals with name and width.
+    signals: dict[str, int]
+    # Step assignments: time -> signal -> value
+    assignments: dict[int, Assignment]
 
 class BTOR2Ex:
     """
@@ -34,6 +43,7 @@ class BTOR2Ex:
         self.prog = prog
 
         self.names: dict[str, int] = {}
+        self.widths: dict[int, int] = {}
 
         # List of variable assignments
         self.state: list[dict] = []
@@ -85,20 +95,25 @@ class BTOR2Ex:
                 # Create the sort
                 if inst.lid not in self.sorts:
                     self.sorts[inst.lid] = self.slv.mk_sort(inst.width)
+                    self.widths[inst.lid] = inst.width
             elif isinstance(inst, prg.Input):
                 # Create a new input
                 self.names[inst.name] = inst.lid
+                self.widths[inst.lid] = self.widths[inst.sid]
             elif isinstance(inst, prg.State):
                 # Create a new state
                 new_state_f[inst.lid] = self.slv.mk_var(
                     self.mk_name(inst.name, 1), self.sorts[inst.sid]
                 )
                 self.names[inst.name] = inst.lid
+                self.widths[inst.lid] = self.widths[inst.sid]
             elif isinstance(inst, prg.Uext):
                 # Handle Uexts which are creating new name bindings
                 # TODO: might have to handle the recursive aliasing case/if there is more logic
                 if inst.renaming:
                     self.names[inst.name] = inst.aliasid
+                    self.widths[inst.lid] = self.widths[inst.operands[0].lid]
+                    self.widths[inst.aliasid] = self.widths[inst.operands[0].lid]
             elif isinstance(inst, prg.Next):
                 # Record mapping from state to next
                 self.nexts[inst.lid] = inst.stid
@@ -218,6 +233,28 @@ class BTOR2Ex:
         logger.debug("State: %s", next_state_f)
         logger.debug("Bads: %s", curr_bads_f)
         logger.debug("Assms: %s", curr_assms_f)
+
+
+    def get_model(self) -> BTORModel:
+        complete_assignments: dict[int, Assignment] = {}
+        complete_signals: dict[str, int] = {}
+        for name, lid in self.names.items():
+            complete_signals[name] = self.widths[lid]
+        
+        for i, assignment in enumerate(self.state):
+            curr_assignment: Assignment = {}
+            for id, expr in assignment.items():
+                curr_assignment[id] = expr.assignment
+
+            complete_assignment = {}
+            for name in complete_signals:
+                reflid = self.names[name]
+                complete_assignment[name] = curr_assignment.get(reflid, 0)
+            complete_assignments[i] = complete_assignment
+        
+        model = BTORModel(signals=complete_signals, assignments=complete_assignments)
+        return model
+
 
     def bmc(self, d=1) -> bool:
         """Perform BMC on the program
