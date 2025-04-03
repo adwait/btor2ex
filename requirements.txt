@@ -1,2 +1,3 @@
-btor2-opt==0.1.3
+btor2-opt==0.2.1
 tqdm==4.67.1
+pyboolector==3.2.3.20240305.1

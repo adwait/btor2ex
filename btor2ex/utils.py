@@ -1,12 +1,9 @@
-# =============================================================================
-#   BTOR Symbolic Execution Engine and Backends                        
-#
-#   BSD 3-Clause License. Copyright (c) 2024, Adwait Godbole 
-# =============================================================================
-
-
 """
+    utils.py
+
     Misc utils
+
+    This file is part of BTOR2Ex. Please see the LICENSE file for details.
 """
 
 def parsewrapper(filepath):

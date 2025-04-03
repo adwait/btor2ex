@@ -3,10 +3,10 @@ import unittest
 
 import btoropt
 
-from btor2ex.boolectorsolver import BoolectorSolver
-import btor2ex.prfsm as prfsm
-from btor2ex.btor2ex import BTOR2Ex
-import btor2ex.utils as utils
+from btor2ex import BoolectorSolver
+from btor2ex import prfsm
+from btor2ex import BTOR2Ex
+from btor2ex import utils
 
 
 class PrFSMTest(unittest.TestCase):

@@ -1,11 +1,9 @@
-# =============================================================================
-#   BTOR Symbolic Execution Engine and Backends                        
-#
-#   BSD 3-Clause License. Copyright (c) 2024, Adwait Godbole 
-# =============================================================================
-
 """
+    prfsm.py
+
     Finite state machine for the proof schedule.
+
+    This file is part of BTOR2Ex. Please see the LICENSE file for details.
 """
 
 from btoropt import Pass

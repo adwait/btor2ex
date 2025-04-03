@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "btor2ex"
+version = "0.1.0"
+description = "Symbolic execution (and model checking) for BTOR2."
+readme = "README.md"
+keywords = ["btor2", "symbolic execution", "model checking"]
+requires-python = ">=3.11"
+license = "BSD-3-Clause"
+authors = [
+  { name="Adwait Godbole", email="adwait@berkeley.edu" }
+]
+dependencies = [
+    "btor2-opt==0.2.1",
+    "tqdm==4.67.1",
+    "pyboolector==3.2.3.20240305.1"
+]
+
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Operating System :: OS Independent",
+]
+
+[project.scripts]
+btor2ex = "btor2ex.btor2ex_main:main"

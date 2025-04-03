@@ -1,3 +1,17 @@
-__pycache__
+# VSCode
 .history
 .vscode
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pdb
+*.egg-info/
+*.eggs
+*.egg
+*.whl
+
+build/
+dist/

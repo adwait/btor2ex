@@ -1,26 +1,37 @@
 
 
-## btor2ex: Barebones symbolic execution (and model checker) for BTOR2 
-
-
+## btor2ex: Symbolic execution (and model checking) for BTOR2 
 
 ### Requirements:
 
-- `btor2-opt`: for parsing btor2 programs
-- `pyboolector`: currently implemented verification backend. Boolector Python bindings need to be installed manually (see https://boolector.github.io/)
+`btor2ex` requires Python 3.11 or later. It is recommended to use a virtual environment to avoid conflicts with other packages. Please see `requirements.txt` for the list of required packages. Install them using: 
 
-### Examples:
-
-The following results in a violation and CEX trace:
-```
-python3 btor2ex_main.py tests/btor/reg_en.bad.btor -b 4
-```
-the following does not:
-```
-python3 btor2ex_main.py tests/btor/reg_en.safe.btor -b 4
+```bash
+pip install -r requirements.txt
 ```
 
+### Package build and install:
+
+Use the `pyproject.toml` tool to build/install the package. This will also install the required packages.
+
+```bash
+pip install .
+```
+
+### Usage:
+
+Without install:
+
+```bash
+python -m btor2ex.btor2ex_main --help
+```
+
+With install:
+
+```bash
+btor2ex --help
+```
 
 ---
 
-(c) Adwait Godbole, BSD-3-Clause
+Copyright (c) 2024-25. Adwait Godbole, UC Berkeley.

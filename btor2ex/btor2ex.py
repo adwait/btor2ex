@@ -244,7 +244,7 @@ class BTOR2Ex:
         for i, assignment in enumerate(self.state):
             curr_assignment: Assignment = {}
             for id, expr in assignment.items():
-                curr_assignment[id] = expr.assignment
+                curr_assignment[id] = self.slv.get_assignment(expr)
 
             complete_assignment = {}
             for name in complete_signals:

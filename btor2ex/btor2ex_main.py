@@ -1,5 +1,10 @@
+"""
+    btor2ex_main.py
 
+    Main entry point for BTOR2Ex.
 
+    This file is part of BTOR2Ex. Please see the LICENSE file for details.
+"""
 
 import argparse
 import sys
@@ -7,27 +12,27 @@ import logging
 
 import btoropt
 
-import btor2ex.btor2ex as btor2ex
-import btor2ex.utils as utils
-import btor2ex.boolectorsolver as boolectorsolver
+from btor2ex import BTOR2Ex
+from btor2ex import parsewrapper
+from btor2ex import boolectorsolver
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-def main(args):
+def inner_main(args):
     
     # Get input file and BMC bound from command line
     argparser = argparse.ArgumentParser(description="BTOR2EX: BTOR2 symbolic execution engine")
     
     argparser.add_argument("input", type=str, help="Input BTOR2 file")
-    argparser.add_argument("-b", "--bound", type=int, help="BMC bound", default=3)
+    argparser.add_argument("-b", "--bound", type=int, help="BMC bound", default=2)
     
     args = argparser.parse_args()
     
     # Parse the input file
-    prgm = btoropt.parse(utils.parsewrapper(args.input))
+    prgm = btoropt.parse(parsewrapper(args.input))
 
-    engine = btor2ex.BTOR2Ex(boolectorsolver.BoolectorSolver("test"), prgm)
+    engine = BTOR2Ex(boolectorsolver.BoolectorSolver("test"), prgm)
     result = engine.bmc(args.bound)
     
     if result:
@@ -36,4 +41,7 @@ def main(args):
         print("UNSAFE: please see log for trace")
 
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    inner_main(sys.argv[1:])
+
+def main():
+    inner_main(sys.argv[1:])

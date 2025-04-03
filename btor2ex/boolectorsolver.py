@@ -1,11 +1,9 @@
-# =============================================================================
-#   BTOR Symbolic Execution Engine and Backends
-#
-#   BSD 3-Clause License. Copyright (c) 2024, Adwait Godbole
-# =============================================================================
-
 """
-    Boolector backend solver
+    boolectorsolver.py
+    
+    Boolector backend solver.
+
+    This file is part of BTOR2Ex. Please see the LICENSE file for details.
 """
 
 import os
@@ -25,22 +23,6 @@ class BoolectorSolver(BTORSolver):
 
         self.btor.Set_opt(pyboolector.BTOR_OPT_INCREMENTAL, 1)
         self.btor.Set_opt(pyboolector.BTOR_OPT_MODEL_GEN, 1)
-        # self.btor.Set_opt(pyboolector.BTOR_OPT_INCREMENTAL_RW, 1)
-        # self.btor.Set_opt(pyboolector.BTOR_OPT_REWRITE_LEVEL, 0)
-        # self.btor.Set_opt(pyboolector.BTOR_OPT_SORT_EXP, 0)
-        # self.btor.Set_opt(pyboolector.BTOR_OPT_ACKERMANN, 0)
-        # self.btor.Set_opt(pyboolector.BTOR_OPT_BETA_REDUCE_ALL, 0)
-        # self.btor.Set_opt(pyboolector.BTOR_OPT_ELIMINATE_SLICES, 0)
-        # self.btor.Set_opt(pyboolector.BTOR_OPT_ELIMINATE_ITE, 0)
-        # self.btor.Set_opt(pyboolector.BTOR_OPT_JUST, 0)
-        # self.btor.Set_opt(pyboolector.BTOR_OPT_JUST_HEURISTIC, 0)
-        # self.btor.Set_opt(pyboolector.BTOR_OPT_JUST_SPLIT, 0)
-        # self.btor.Set_opt(pyboolector.BTOR_OPT_JUST_APP, 0)
-        # self.btor.Set_opt(pyboolector.BTOR_OPT_JUST_LEMMA, 0)
-        # self.btor.Set_opt(pyboolector.BTOR_OPT_JUST_LAZY, 0)
-        # self.btor.Set_opt(pyboolector.BTOR_OPT_JUST_INFER, 0)
-        # self.btor.Set_opt(pyboolector.BTOR_OPT_JUST_INFER_EX, 0)
-        # self.btor.Set_opt(pyboolector.BTOR_OPT_JUST_INFER_AND, 0)
 
     def mk_var(self, name: str, sort: BTORSort):
         """Make var"""
@@ -83,6 +65,10 @@ class BoolectorSolver(BTORSolver):
             model = f.read()
         os.remove(".btormodel.tmp")
         return model
+
+    def get_assignment(self, expr):
+        """Get assignment"""
+        return expr.assignment
 
     def push(self):
         """Push a context"""
